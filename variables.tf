@@ -1,19 +1,22 @@
-variable "owner" {
-  type = string
-  default = "niels"
-}
+#variable "owner" {
+#  type = string
+#  default = "niels"
+#}
 
 variable "project_name" {
   type = string
-  default = "test"
+  default = "oym-sand-helloworld"
 }
 
 variable "location" {
   type = string
-  default = "westeurope"
+  default = "switzerlandnorth"
 }
 
 variable "tags" {
   type        = map(string)
-  default     = {}
+  default     = {
+    creator = "isabel.lafaia@oym.ch"
+    environment = "sand"
+  }
 }
