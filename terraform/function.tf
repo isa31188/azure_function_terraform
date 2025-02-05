@@ -10,16 +10,19 @@ data "archive_file" "function" {
 resource "null_resource" "pip" {
   triggers = {
     requirements_md5 = "${filemd5("${path.module}/../function_src/requirements.txt")}"
+    function_md5     = "${filemd5("${path.module}/../function_src/function_app.py")}"
+    host_md5         = "${filemd5("${path.module}/../function_src/host.json")}"
   }
   provisioner "local-exec" {
-    command     = "pip install --target='.python_packages/lib/site-packages' -r requirements.txt"
+    #command     = "pip install --target='.python_packages/lib/site-packages' -r requirements.txt"
+    command     = "python -m venv .venv; source .venv/bin/activate; pip install -r requirements.txt"
     working_dir = "${path.module}/../function_src"
   }
 }
 
 resource "azurerm_storage_container" "function_releases" {
-  name                 = "function-releases"
-  storage_account_id = data.azurerm_storage_account.sa.id
+  name                  = "function-releases"
+  storage_account_id    = data.azurerm_storage_account.sa.id
   container_access_type = "private"
 }
 
@@ -37,11 +40,11 @@ resource "azurerm_linux_function_app" "fa" {
   service_plan_id     = azurerm_service_plan.sp.id
   location            = var.location
 
-  storage_account_name       = data.azurerm_storage_account.sa.name
-  storage_account_access_key = data.azurerm_storage_account.sa.primary_access_key
+  storage_account_name        = data.azurerm_storage_account.sa.name
+  storage_account_access_key  = data.azurerm_storage_account.sa.primary_access_key
   functions_extension_version = "~4"
-  name                       = "${var.project_name}-fa"
-  tags                       = var.tags
+  name                        = "${var.project_name}-fa"
+  tags                        = var.tags
 
   site_config {
     application_stack {
@@ -59,9 +62,40 @@ resource "azurerm_linux_function_app" "fa" {
   }
 }
 
+
+#resource "azurerm_function_app" "fa" {
+#  resource_group_name        = data.azurerm_resource_group.rg.name
+#  app_service_plan_id        = azurerm_app_service_plan.sp.id
+#  location                   = var.location
+#
+#  storage_account_name       = data.azurerm_storage_account.sa.name
+#  storage_account_access_key = data.azurerm_storage_account.sa.primary_access_key
+#  name                       = "${var.project_name}-fa"
+#  tags                       = var.tags
+#
+#  enable_builtin_logging     = false
+#  os_type                    = "linux"
+#  version                    = "~4"
+#
+#  site_config {
+#    linux_fx_version = "PYTHON|3.9"
+#    use_32_bit_worker_process = false
+#  }
+#
+#  identity {
+#    type = "SystemAssigned"
+#  }
+#
+#  app_settings = {
+#    "FUNCTIONS_WORKER_RUNTIME"   = "python"
+#    "WEBSITE_RUN_FROM_PACKAGE"   = azurerm_storage_blob.storage_blob_function.url
+#  }
+#}
+
 resource "azurerm_role_assignment" "role_assignment_storage" {
   scope                            = data.azurerm_storage_account.sa.id
   role_definition_name             = "Storage Blob Data Contributor"
   principal_id                     = azurerm_linux_function_app.fa.identity.0.principal_id
+  #principal_id = azurerm_function_app.fa.identity.0.principal_id
   skip_service_principal_aad_check = true
 }

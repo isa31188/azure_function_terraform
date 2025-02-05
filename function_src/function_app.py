@@ -7,6 +7,8 @@ import azurefunctions.extensions.bindings.blob as blob
 from seaborn import load_dataset
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+
+@app.function_name(name="BlobTrigger")
 @app.blob_trigger(arg_name="client", path="source/{name}.jpg", connection="AzureWebJobsStorage")
 def blob_trigger(client: blob.BlobClient):
     logging.info(
