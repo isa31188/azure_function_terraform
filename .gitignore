@@ -34,4 +34,7 @@ override.tf.json
 
 __pycache__/
 
-functions.zip
+**.zip
+
+**.python_packages**
+**.venv**
