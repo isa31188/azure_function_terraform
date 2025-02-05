@@ -4,19 +4,19 @@
 #}
 
 variable "project_name" {
-  type = string
+  type    = string
   default = "oym-sand-helloworld"
 }
 
 variable "location" {
-  type = string
+  type    = string
   default = "switzerlandnorth"
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {
-    creator = "isabel.lafaia@oym.ch"
+  type = map(string)
+  default = {
+    creator     = "isabel.lafaia@oym.ch"
     environment = "sand"
   }
 }

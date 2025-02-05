@@ -1,3 +1,12 @@
+
+resource "azurerm_application_insights" "app-insights" {
+  application_type    = "web"
+  location            = var.location
+  name                = "${var.project_name}-ai"
+  resource_group_name = data.azurerm_resource_group.resource_group.name
+  tags                = var.tags
+}
+
 #data "azurerm_resource_group" "rg" {
 #  name     = "niels-zeilemaker-sandbox"
 #}
@@ -29,17 +38,17 @@ data "archive_file" "function" {
 #}
 
 resource "azurerm_storage_container" "storage_container_function" {
-  name                  = "function-releases"
-  storage_account_name  = data.azurerm_storage_account.storage_account.name
+  name                 = "function-releases"
+  storage_account_name = data.azurerm_storage_account.storage_account.name
 }
 
 resource "azurerm_storage_container" "source" {
-  name                  = "source"
-  storage_account_name  = data.azurerm_storage_account.storage_account.name
+  name                 = "source"
+  storage_account_name = data.azurerm_storage_account.storage_account.name
 }
 
 resource "azurerm_storage_blob" "storage_blob_function" {
-  name                   = "functions-${substr(data.archive_file.function.output_md5,0,6)}.zip"
+  name                   = "functions-${substr(data.archive_file.function.output_md5, 0, 6)}.zip"
   storage_account_name   = data.azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_function.name
   type                   = "Block"
@@ -92,21 +101,21 @@ resource "azurerm_app_service_plan" "main" {
 }
 
 resource "azurerm_function_app" "function-app" {
-  resource_group_name        = data.azurerm_resource_group.resource_group.name
-  app_service_plan_id        = azurerm_app_service_plan.main.id
-  location                   = var.location
+  resource_group_name = data.azurerm_resource_group.resource_group.name
+  app_service_plan_id = azurerm_app_service_plan.main.id
+  location            = var.location
 
   storage_account_name       = data.azurerm_storage_account.storage_account.name
   storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
   name                       = "${var.project_name}-fa"
   tags                       = var.tags
 
-  enable_builtin_logging     = false
-  os_type                    = "linux"
-  version                    = "~4"
+  enable_builtin_logging = false
+  os_type                = "linux"
+  version                = "~4"
 
   site_config {
-    linux_fx_version = "PYTHON|3.9"
+    linux_fx_version          = "PYTHON|3.9"
     use_32_bit_worker_process = false
   }
 
@@ -115,11 +124,12 @@ resource "azurerm_function_app" "function-app" {
   }
 
   app_settings = {
-    "FUNCTIONS_WORKER_RUNTIME"   = "python"
+    "FUNCTIONS_WORKER_RUNTIME" = "python"
     #"EventHub_AccessKey"         = azurerm_eventhub_namespace.main.default_primary_connection_string
-    "WEBSITE_RUN_FROM_PACKAGE"   = azurerm_storage_blob.storage_blob_function.url
+    "WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.storage_blob_function.url
     #"APPINSIGHTS_INSTRUMENTATIONKEY"           = azurerm_application_insights.app-insights.instrumentation_key
-    "MyStorageConnectionAppSetting": data.azurerm_storage_account.storage_account.primary_connection_string
+    "MyStorageConnectionAppSetting" : data.azurerm_storage_account.storage_account.primary_connection_string
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.app-insights.instrumentation_key
   }
 }
 
