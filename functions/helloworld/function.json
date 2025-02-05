@@ -1,19 +1,27 @@
 {
   "scriptFile": "__init__.py",
   "bindings": [{
-      "authLevel": "anonymous",
-      "type": "httpTrigger",
+      "name": "myblob",
+      "type": "blobTrigger",
       "direction": "in",
-      "name": "req",
-      "methods": [
-        "get"
-      ],
-      "route": "hello"
+      "path": "source/{name}",
+      "connection":"MyStorageConnectionAppSetting"
+        },
+    {
+      "name": "inputblob",
+      "type": "blob",
+      "dataType": "binary",
+      "path": "source/{name}",
+      "connection": "MyStorageConnectionAppSetting",
+      "direction": "in"
     },
     {
-      "type": "http",
-      "direction": "out",
-      "name": "$return"
+      "name": "outputblob",
+      "type": "blob",
+      "dataType": "binary",
+      "path": "function-releases/{name}",
+      "connection": "MyStorageConnectionAppSetting",
+      "direction": "out"
     }
   ]
 }

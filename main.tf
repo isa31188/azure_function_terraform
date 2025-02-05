@@ -33,6 +33,11 @@ resource "azurerm_storage_container" "storage_container_function" {
   storage_account_name  = data.azurerm_storage_account.storage_account.name
 }
 
+resource "azurerm_storage_container" "source" {
+  name                  = "source"
+  storage_account_name  = data.azurerm_storage_account.storage_account.name
+}
+
 resource "azurerm_storage_blob" "storage_blob_function" {
   name                   = "functions-${substr(data.archive_file.function.output_md5,0,6)}.zip"
   storage_account_name   = data.azurerm_storage_account.storage_account.name
@@ -114,6 +119,7 @@ resource "azurerm_function_app" "function-app" {
     #"EventHub_AccessKey"         = azurerm_eventhub_namespace.main.default_primary_connection_string
     "WEBSITE_RUN_FROM_PACKAGE"   = azurerm_storage_blob.storage_blob_function.url
     #"APPINSIGHTS_INSTRUMENTATIONKEY"           = azurerm_application_insights.app-insights.instrumentation_key
+    "MyStorageConnectionAppSetting": data.azurerm_storage_account.storage_account.primary_connection_string
   }
 }
 
