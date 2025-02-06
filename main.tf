@@ -126,7 +126,7 @@ resource "azurerm_function_app" "function-app" {
   app_settings = {
     "FUNCTIONS_WORKER_RUNTIME" = "python"
     #"EventHub_AccessKey"         = azurerm_eventhub_namespace.main.default_primary_connection_string
-    "WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.storage_blob_function.url
+    #"WEBSITE_RUN_FROM_PACKAGE" = azurerm_storage_blob.storage_blob_function.url
     #"APPINSIGHTS_INSTRUMENTATIONKEY"           = azurerm_application_insights.app-insights.instrumentation_key
     "MyStorageConnectionAppSetting" : data.azurerm_storage_account.storage_account.primary_connection_string
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.app-insights.instrumentation_key
