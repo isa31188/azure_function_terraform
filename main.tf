@@ -130,6 +130,7 @@ resource "azurerm_function_app" "function-app" {
     #"APPINSIGHTS_INSTRUMENTATIONKEY"           = azurerm_application_insights.app-insights.instrumentation_key
     "MyStorageConnectionAppSetting" : data.azurerm_storage_account.storage_account.primary_connection_string
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.app-insights.instrumentation_key
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = true
   }
 }
 
