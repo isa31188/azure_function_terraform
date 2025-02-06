@@ -38,13 +38,13 @@ data "archive_file" "function" {
 #}
 
 resource "azurerm_storage_container" "storage_container_function" {
-  name                 = "function-releases"
-  storage_account_name = data.azurerm_storage_account.storage_account.name
+  name               = "function-releases"
+  storage_account_id = data.azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_container" "source" {
-  name                 = "source"
-  storage_account_name = data.azurerm_storage_account.storage_account.name
+  name               = "source"
+  storage_account_id = data.azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_blob" "storage_blob_function" {
