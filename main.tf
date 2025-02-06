@@ -38,13 +38,15 @@ data "archive_file" "function" {
 #}
 
 resource "azurerm_storage_container" "storage_container_function" {
-  name                 = "function-releases"
-  storage_account_name = data.azurerm_storage_account.storage_account.name
+  name = "function-releases"
+  #storage_account_name = data.azurerm_storage_account.storage_account.name
+  storage_account_id = data.azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_container" "source" {
-  name                 = "source"
-  storage_account_name = data.azurerm_storage_account.storage_account.name
+  name = "source"
+  #storage_account_name = data.azurerm_storage_account.storage_account.name
+  storage_account_id = data.azurerm_storage_account.storage_account.id
 }
 
 resource "azurerm_storage_blob" "storage_blob_function" {
@@ -86,23 +88,18 @@ resource "azurerm_storage_blob" "storage_blob_function" {
 #  tags                = var.tags
 #}
 
-resource "azurerm_app_service_plan" "main" {
+resource "azurerm_service_plan" "main" {
   name                = "${var.project_name}-asp"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.resource_group.name
-  kind                = "FunctionApp"
-  reserved            = true
+  os_type             = "Linux"
   tags                = var.tags
-
-  sku {
-    tier = "Dynamic"
-    size = "Y1"
-  }
+  sku_name            = "Y1"
 }
 
 resource "azurerm_function_app" "function-app" {
   resource_group_name = data.azurerm_resource_group.resource_group.name
-  app_service_plan_id = azurerm_app_service_plan.main.id
+  app_service_plan_id = azurerm_service_plan.main.id
   location            = var.location
 
   storage_account_name       = data.azurerm_storage_account.storage_account.name
