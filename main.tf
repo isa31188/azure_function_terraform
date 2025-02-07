@@ -98,7 +98,7 @@ resource "null_resource" "func_deploy" {
       --src functions.zip \
       --build-remote true
       EOT
-    : "echo 'No further commands needed.'") # run command only if remote_build
+    : "echo 'Local function build: no further commands needed.'") # run command only if remote_build
     working_dir = path.module
   }
   depends_on = [azurerm_linux_function_app.function-app]

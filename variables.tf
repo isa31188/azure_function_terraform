@@ -1,7 +1,7 @@
-#variable "owner" {
-#  type = string
-#  default = "niels"
-#}
+variable "remote_build" {
+  type = bool
+  default = false
+}
 
 variable "project_name" {
   type    = string
