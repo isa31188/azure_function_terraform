@@ -1,4 +1,12 @@
 
+# For function and plan names. To avoid issues with automatically 
+# created artifacts, when deploying always using the same names.
+resource "random_string" "random" {
+  length           = 4
+  lower            = true
+  min_lower        = 4
+}
+
 resource "azurerm_application_insights" "app-insights" {
   application_type    = "web"
   location            = var.location
@@ -16,10 +24,21 @@ data "azurerm_storage_account" "storage_account" {
   resource_group_name = data.azurerm_resource_group.resource_group.name
 }
 
+resource "null_resource" "pip" {
+  triggers = {
+    requirements_md5 = "${filemd5("${path.module}/functions/requirements.txt")}"
+  }
+  provisioner "local-exec" {
+    command     = "pip install --target='.python_packages/lib/site-packages' -r requirements.txt"
+    working_dir = "${path.module}/functions"
+  }
+}
+
 data "archive_file" "function" {
   type        = "zip"
   source_dir  = "${path.module}/functions"
   output_path = "${path.module}/functions.zip"
+  depends_on  = [null_resource.pip]
 }
 
 resource "azurerm_storage_container" "storage_container_function" {
@@ -42,7 +61,7 @@ resource "azurerm_storage_blob" "storage_blob_function" {
 }
 
 resource "azurerm_service_plan" "main" {
-  name                = "${var.project_name}-asp"
+  name                = "${var.project_name}-${random_string.random.id}-asp"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.resource_group.name
   os_type             = "Linux"
@@ -57,7 +76,7 @@ resource "azurerm_linux_function_app" "function-app" {
 
   storage_account_name       = data.azurerm_storage_account.storage_account.name
   storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
-  name                       = "${var.project_name}-fa"
+  name                       = "${var.project_name}-${random_string.random.id}-fa"
   tags                       = var.tags
 
   builtin_logging_enabled = false
