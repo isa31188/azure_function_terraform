@@ -63,6 +63,8 @@ resource "azurerm_linux_function_app" "function-app" {
   service_plan_id     = azurerm_service_plan.main.id
   location            = var.location
   storage_account_name       = data.azurerm_storage_account.storage_account.name
+  # Note: this will automatically define the function env variable AzureWebJobsStorage.
+  # Note: storage_account_access_key conflicts with storage_uses_managed_identity.
   storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
   name                       = "${var.project_name}-${random_string.random.id}-fa"
   tags                       = var.tags
@@ -82,7 +84,9 @@ resource "azurerm_linux_function_app" "function-app" {
     "FUNCTIONS_WORKER_RUNTIME"       = "python"
     "WEBSITE_RUN_FROM_PACKAGE"       = var.remote_build ? null : azurerm_storage_blob.storage_blob_function.url
     "SCM_DO_BUILD_DURING_DEPLOYMENT" = var.remote_build ? true : null
-    "MyStorageConnectionAppSetting"  = data.azurerm_storage_account.storage_account.primary_connection_string
+    
+    # Instead of the below, the function should rather use AzureWebJobsStorage, automatically setup by TF.
+    #"MyStorageConnectionAppSetting"  = data.azurerm_storage_account.storage_account.primary_connection_string
     # This is actually automatically set by terraform by defining application_insights_key in the site_config block.
     #"APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.app-insights.instrumentation_key
   }

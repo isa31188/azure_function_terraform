@@ -5,14 +5,14 @@
       "type": "blobTrigger",
       "direction": "in",
       "path": "source/{name}",
-      "connection":"MyStorageConnectionAppSetting"
+      "connection":"AzureWebJobsStorage"
         },
     {
       "name": "inputblob",
       "type": "blob",
       "dataType": "binary",
       "path": "source/{name}",
-      "connection": "MyStorageConnectionAppSetting",
+      "connection": "AzureWebJobsStorage",
       "direction": "in"
     },
     {
@@ -20,7 +20,7 @@
       "type": "blob",
       "dataType": "binary",
       "path": "function-releases/{name}",
-      "connection": "MyStorageConnectionAppSetting",
+      "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
   ]
