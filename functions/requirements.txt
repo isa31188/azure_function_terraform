@@ -1,1 +1,5 @@
-seaborn
+pandas
+avro
+azure-functions
+azure-storage-blob
+azure-identity

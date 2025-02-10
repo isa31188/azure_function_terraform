@@ -1,6 +1,6 @@
 variable "remote_build" {
   type = bool
-  default = false
+  default = true
 }
 
 variable "project_name" {
