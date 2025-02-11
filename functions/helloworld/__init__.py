@@ -28,26 +28,46 @@ container_client = blob_service_client.get_container_client(container=container_
 
 def main(myblob: func.InputStream):
     
-    uploaded_blob_name = myblob.name
-    logging.info('Python Blob trigger function processed %s', uploaded_blob_name)
+    blob_path_wcontainer = myblob.name
+    blob_path = "/".join(blob_path_wcontainer.split("/")[1:])
+    logging.warning('Python Blob trigger function processed %s', blob_path)
 
     # DOWNLOAD FILE
 
-    # Downloading using the same prefix as in the blob store
-    download_file_path = uploaded_blob_name
+    # Downloading to tmp, otherwise, the function filesystem is read-only:
+    # https://stackoverflow.com/questions/63318567/azure-function-exception-oserror-errno-30-read-only-file-system
+    file_name = blob_path.split("/")[-1]
+    download_file_path = f'/tmp/{file_name}'
+    logging.warning("\nDownloading blob to \n\t" + download_file_path)
 
-    logging.info("\nDownloading blob to \n\t" + download_file_path)
+    try:
+        with open(file=download_file_path, mode="wb") as download_file:
+            download_file.write(container_client.download_blob(blob_path).readall())
 
-    with open(file=download_file_path, mode="wb") as download_file:
-        download_file.write(container_client.download_blob(upload_file_path).readall())
+    except Exception as e:
+        logging.error("Error downloading blob.")
+        logging.error(e)
+
+    logging.warning("Blob successfully downloaded.")
 
     # PROCESS ACCORDING TO FILE FORMAT
     
-    file_format = upload_file_path.split(".")[-1]
+    file_format = download_file_path.split(".")[-1]
     if file_format == "csv":
+        logging.warning("Reading as csv.")
         df = read_csv(download_file_path)
-        logging.info(df.head())
+        logging.warning(df.head())
     elif file_format == "avro":
+        logging.warning("Reading as avro.")
         df = avro_to_pandas(download_file_path)
-        logging.info(df.head())
+        logging.warning(df.head())
 
+    # DELETING BLOB
+
+    logging.warning("Deleting blob.")
+    try:
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)
+        blob_client.delete_blob(delete_snapshots="include")
+    except Exception as e:
+        logging.error("Error deleting blob.")
+        logging.error(e)
