@@ -92,6 +92,9 @@ resource "azurerm_linux_function_app" "function-app" {
   }
 }
 resource "null_resource" "func_deploy" {
+  triggers = {
+    function_zip_md5 = data.archive_file.function.output_md5
+  }
   provisioner "local-exec" {
     command = (
       var.remote_build ?
@@ -105,7 +108,10 @@ resource "null_resource" "func_deploy" {
     : "echo 'Local function build: no further commands needed.'") # run command only if remote_build
     working_dir = path.module
   }
-  depends_on = [azurerm_linux_function_app.function-app]
+  depends_on = [
+    azurerm_linux_function_app.function-app, 
+    azurerm_storage_blob.storage_blob_function
+    ]
 }
 resource "azurerm_role_assignment" "role_assignment_storage" {
   scope                            = data.azurerm_storage_account.storage_account.id
