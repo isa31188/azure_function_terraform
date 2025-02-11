@@ -3,3 +3,4 @@ avro
 azure-functions
 azure-storage-blob
 azure-identity
+python-snappy

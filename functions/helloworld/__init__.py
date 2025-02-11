@@ -14,13 +14,19 @@ from avro.io import DatumWriter, DatumReader
 
 def avro_to_pandas(avro_file_path: str) -> pd.DataFrame:
 
+    logging.warning("Inside avro_to_pandas.")
+
     try:
         avro_reader = DataFileReader(open(avro_file_path, "rb"), DatumReader())
     except Exception as e:
         logging.error("Error creating DataFileReader")
         logging.error(e)
     
-    records = [record for record in avro_reader]
+    try:
+        records = [record for record in avro_reader]
+    except Exception as e:
+        logging.error("Error getting records.")
+        logging.error(e)
 
     try:
         df = pd.DataFrame.from_records(records)
@@ -84,7 +90,7 @@ def main(myblob: func.InputStream):
     try:
         df = read_func(download_file_path)
         logging.warning(df.head())
-    except Exception as E:
+    except Exception as e:
         logging.error("Error reading to pandas.")
         logging.error(e)
 
