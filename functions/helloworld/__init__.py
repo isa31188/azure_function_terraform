@@ -14,9 +14,22 @@ from avro.io import DatumWriter, DatumReader
 
 def avro_to_pandas(avro_file_path: str) -> pd.DataFrame:
 
-    avro_reader = DataFileReader(open(avro_file_path, "rb"), DatumReader())
+    try:
+        avro_reader = DataFileReader(open(avro_file_path, "rb"), DatumReader())
+    except Exception as e:
+        logging.error("Error creating DataFileReader")
+        logging.error(e)
+    
     records = [record for record in avro_reader]
-    return pd.DataFrame.from_records(records)
+
+    try:
+        df = pd.DataFrame.from_records(records)
+    except Exception as e:
+        logging.error("Error converting to pandas.")
+        logging.error(f"Records: {records}")
+        logging.error(e)
+
+    return df
 
 
 account_url = "https://oymdeploysandiacdl01.blob.core.windows.net"
@@ -55,12 +68,25 @@ def main(myblob: func.InputStream):
     file_format = download_file_path.split(".")[-1]
     if file_format == "csv":
         logging.warning("Reading as csv.")
-        df = read_csv(download_file_path)
-        logging.warning(df.head())
+        try:
+            read_func = pd.read_csv
+        except Exception as e:
+            logging.error("Error getting pd.read_csv")
+            logging.error(e)
     elif file_format == "avro":
         logging.warning("Reading as avro.")
-        df = avro_to_pandas(download_file_path)
+        try:
+            read_func = avro_to_pandas
+        except Exception as e:
+            logging.error("Error getting avro_to_pandas")
+            logging.error(e)
+
+    try:
+        df = read_func(download_file_path)
         logging.warning(df.head())
+    except Exception as E:
+        logging.error("Error reading to pandas.")
+        logging.error(e)
 
     # DELETING BLOB
 
