@@ -1,5 +1,5 @@
 variable "remote_build" {
-  type = bool
+  type    = bool
   default = true
 }
 

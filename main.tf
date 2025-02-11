@@ -59,16 +59,16 @@ resource "azurerm_service_plan" "main" {
   sku_name            = "Y1"
 }
 resource "azurerm_linux_function_app" "function-app" {
-  resource_group_name = data.azurerm_resource_group.resource_group.name
-  service_plan_id     = azurerm_service_plan.main.id
-  location            = var.location
-  storage_account_name       = data.azurerm_storage_account.storage_account.name
+  resource_group_name  = data.azurerm_resource_group.resource_group.name
+  service_plan_id      = azurerm_service_plan.main.id
+  location             = var.location
+  storage_account_name = data.azurerm_storage_account.storage_account.name
   # Note: this will automatically define the function env variable AzureWebJobsStorage.
   # Note: storage_account_access_key conflicts with storage_uses_managed_identity.
-  storage_account_access_key = data.azurerm_storage_account.storage_account.primary_access_key
-  name                       = "${var.project_name}-${random_string.random.id}-fa"
-  tags                       = var.tags
-  builtin_logging_enabled = false
+  storage_account_access_key  = data.azurerm_storage_account.storage_account.primary_access_key
+  name                        = "${var.project_name}-${random_string.random.id}-fa"
+  tags                        = var.tags
+  builtin_logging_enabled     = false
   functions_extension_version = "~4"
   site_config {
     use_32_bit_worker = false
@@ -84,7 +84,7 @@ resource "azurerm_linux_function_app" "function-app" {
     "FUNCTIONS_WORKER_RUNTIME"       = "python"
     "WEBSITE_RUN_FROM_PACKAGE"       = var.remote_build ? null : azurerm_storage_blob.storage_blob_function.url
     "SCM_DO_BUILD_DURING_DEPLOYMENT" = var.remote_build ? true : null
-    
+    "ACCOUNT_URL"                    = "https://${data.azurerm_storage_account.storage_account.name}.blob.core.windows.net"
     # Instead of the below, the function should rather use AzureWebJobsStorage, automatically setup by TF.
     #"MyStorageConnectionAppSetting"  = data.azurerm_storage_account.storage_account.primary_connection_string
     # This is actually automatically set by terraform by defining application_insights_key in the site_config block.
@@ -109,9 +109,9 @@ resource "null_resource" "func_deploy" {
     working_dir = path.module
   }
   depends_on = [
-    azurerm_linux_function_app.function-app, 
+    azurerm_linux_function_app.function-app,
     azurerm_storage_blob.storage_blob_function
-    ]
+  ]
 }
 resource "azurerm_role_assignment" "role_assignment_storage" {
   scope                            = data.azurerm_storage_account.storage_account.id
