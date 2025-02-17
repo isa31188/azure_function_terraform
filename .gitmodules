@@ -1,0 +1,3 @@
+[submodule "test_transcrypt"]
+	path = test_transcrypt
+	url = https://github.com/isa31188/test_transcrypt.git
