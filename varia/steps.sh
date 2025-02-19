@@ -22,6 +22,9 @@ source .venv_blobstorage/bin/activate
 # Install from requirements.txt
 pip install -r requirements.txt
 
+# Alternative with direct package installation
+# pip install pandas fastparquet adlfs
+
 # Run the python code.
 # Make sure the following environment variables are set
 # either before executing the python code or in the script itself.
