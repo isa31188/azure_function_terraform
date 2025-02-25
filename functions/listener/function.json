@@ -4,8 +4,9 @@
         "type": "eventHubTrigger",
         "name": "event",
         "direction": "in",
-        "eventHubName": "events",
-        "connection": "EventHub_AccessKey"
+        "eventHubName": "oym-sand-testeventhub-eh",
+        "connection": "EventHubConnectionString",
+        "consumerGroup": "cg"
       }
     ],
     "disabled": false

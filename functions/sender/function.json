@@ -4,14 +4,14 @@
       "name": "timer",
       "type": "timerTrigger",
       "direction": "in",
-      "schedule": "*/5 * * * * *"
+      "schedule": "0 * * * * *"
     },
     {
       "type": "eventHub",
       "name": "$return",
       "direction": "out",
-      "eventHubName": "events",
-      "connection": "EventHub_AccessKey"
+      "eventHubName": "oym-sand-testeventhub-eh",
+      "connection": "EventHubConnectionString"
     }
   ],
   "disabled": false
