@@ -1,5 +1,10 @@
 data "azurerm_resource_group" "rg" {
-  name     = "niels-zeilemaker-sandbox"
+  name = "oym-deploy-sand-rg"
+}
+
+data "azurerm_storage_account" "sa" {
+  name                = "oymdeploysandiacdl01"
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 data "archive_file" "function" {
@@ -8,25 +13,14 @@ data "archive_file" "function" {
   output_path = "${path.module}/functions.zip"
 }
 
-resource "azurerm_storage_account" "storage_account_function" {
-  name                     = "st${var.owner}${var.project_name}fn"
-  resource_group_name      = data.azurerm_resource_group.rg.name
-  location                 = var.location
-  account_tier             = "standard"
-  account_replication_type = "LRS"
-  account_kind             = "StorageV2"
-  is_hns_enabled           = true
-  tags                     = var.tags
-}
-
 resource "azurerm_storage_container" "storage_container_function" {
   name                  = "function-releases"
-  storage_account_name  = azurerm_storage_account.storage_account_function.name
+  storage_account_name  = data.azurerm_storage_account.sa.name
 }
 
 resource "azurerm_storage_blob" "storage_blob_function" {
   name                   = "functions-${substr(data.archive_file.function.output_md5,0,6)}.zip"
-  storage_account_name   = azurerm_storage_account.storage_account_function.name
+  storage_account_name   = data.azurerm_storage_account.sa.name
   storage_container_name = azurerm_storage_container.storage_container_function.name
   type                   = "Block"
   content_md5            = data.archive_file.function.output_md5
@@ -35,7 +29,7 @@ resource "azurerm_storage_blob" "storage_blob_function" {
 
 resource "azurerm_eventhub_namespace" "main" {
   location            = var.location
-  name                = "eh-${var.owner}-${var.project_name}-datadog"
+  name                = "${var.project_name}-evhns"
   resource_group_name = data.azurerm_resource_group.rg.name
   sku                 = "Standard"
   capacity            = 1
@@ -44,13 +38,13 @@ resource "azurerm_eventhub_namespace" "main" {
 resource "azurerm_eventhub" "main" {
   namespace_name      = azurerm_eventhub_namespace.main.name
   resource_group_name = data.azurerm_resource_group.rg.name
-  name                = "events"
+  name                = "${var.project_name}-evh"
   message_retention   = 1
   partition_count     = 2
 }
-resource "azurerm_eventhub_consumer_group" "fa" {
+resource "azurerm_eventhub_consumer_group" "cg" {
   eventhub_name       = azurerm_eventhub.main.name
-  name                = "fa"
+  name                = "${var.project_name}-cg"
   namespace_name      = azurerm_eventhub_namespace.main.name
   resource_group_name = data.azurerm_resource_group.rg.name
 }
@@ -58,13 +52,13 @@ resource "azurerm_eventhub_consumer_group" "fa" {
 resource "azurerm_application_insights" "app-insights" {
   application_type    = "web"
   location            = var.location
-  name                = "app-${var.owner}-${var.project_name}"
+  name                = "${var.project_name}-ai"
   resource_group_name = data.azurerm_resource_group.rg.name
   tags                = var.tags
 }
 
 resource "azurerm_app_service_plan" "main" {
-  name                = "asp-${var.owner}-${var.project_name}"
+  name                = "${var.project_name}-asp"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   kind                = "FunctionApp"
@@ -82,9 +76,9 @@ resource "azurerm_function_app" "function-app" {
   app_service_plan_id        = azurerm_app_service_plan.main.id
   location                   = var.location
 
-  storage_account_name       = azurerm_storage_account.storage_account_function.name
-  storage_account_access_key = azurerm_storage_account.storage_account_function.primary_access_key
-  name                       = "fa-${var.owner}-${var.project_name}"
+  storage_account_name       = data.azurerm_storage_account.sa.name
+  storage_account_access_key = data.azurerm_storage_account.sa.primary_access_key
+  name                       = "${var.project_name}-fa"
   tags                       = var.tags
 
   enable_builtin_logging     = false
@@ -109,7 +103,7 @@ resource "azurerm_function_app" "function-app" {
 }
 
 resource "azurerm_role_assignment" "role_assignment_storage" {
-  scope                            = azurerm_storage_account.storage_account_function.id
+  scope                            = data.azurerm_storage_account.sa.id
   role_definition_name             = "Storage Blob Data Contributor"
   principal_id                     = azurerm_function_app.function-app.identity.0.principal_id
   skip_service_principal_aad_check = true

@@ -1,19 +1,18 @@
-variable "owner" {
-  type = string
-  default = "niels"
-}
 
 variable "project_name" {
-  type = string
-  default = "test"
+  type    = string
+  default = "oym-sand-testeventhub1"
 }
 
 variable "location" {
-  type = string
-  default = "westeurope"
+  type    = string
+  default = "switzerlandnorth"
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type = map(string)
+  default = {
+    creator     = "isabel.lafaia@oym.ch"
+    environment = "sand"
+  }
 }
